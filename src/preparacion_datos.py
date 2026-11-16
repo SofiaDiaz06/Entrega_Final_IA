@@ -1,0 +1,86 @@
+import pandas as pd
+import numpy as np
+import os
+
+def cargar_datos(ruta_csv):
+    """Carga el dataset original con manejo de excepciones."""
+    try:
+        df = pd.read_csv(ruta_csv)
+        print(f"[OK] Archivo cargado: {df.shape[0]} filas y {df.shape[1]} columnas.")
+        return df
+    except FileNotFoundError:
+        print(f"[ERROR] No se encontró el archivo en: {ruta_csv}")
+        return None
+    except Exception as e:
+        print(f"[ERROR] Ocurrió un problema al leer el CSV: {e}")
+        return None
+
+def limpiar_y_transformar(df):
+    """Limpia erratas, verifica nulos y crea variables financieras del negocio."""
+    df_limpio = df.copy()
+
+    # 1. Revisión de valores nulos
+    nulos = df_limpio.isnull().sum().sum()
+    print(f"[INFO] Valores nulos detectados: {nulos}")
+    if nulos > 0:
+        # Si llegaran a existir nulos numéricos, se imputan con la mediana
+        df_limpio = df_limpio.fillna(df_limpio.median(numeric_only=True))
+
+    # 2. Corrección de errores tipográficos en categorías ('Juquetes' -> 'Juguetes')
+    df_limpio["categoria"] = df_limpio["categoria"].str.strip().replace({
+        "Juquetes": "Juguetes"
+    })
+    print("[OK] Categorías estandarizadas:", df_limpio["categoria"].unique().tolist())
+
+    # 3. Creación de columnas derivadas (Ingeniería de Características)
+    df_limpio["ganancia_unitaria"] = df_limpio["precio_venta"] - df_limpio["costo_compra"]
+    df_limpio["margen_ganancia"] = ((df_limpio["ganancia_unitaria"] / df_limpio["precio_venta"]) * 100).round(2)
+    df_limpio["rotacion_diaria"] = (df_limpio["unidades_vendidas"] / 30).round(2)
+
+    # 4. Variable objetivo (Target): 1 = Abastecer, 0 = No abastecer
+    # Regla de negocio: Alta demanda (>= 100 uds) y buena rentabilidad (margen >= 40%)
+    df_limpio["decision_abastecer"] = np.where(
+        (df_limpio["unidades_vendidas"] >= 100) & (df_limpio["margen_ganancia"] >= 40),
+        1,
+        0
+    )
+
+    print("[OK] Variables derivadas y etiqueta 'decision_abastecer' creadas.")
+    print(f"     Distribución de clases: {df_limpio['decision_abastecer'].value_counts().to_dict()}")
+    return df_limpio
+
+def preparar_para_ml(df_limpio):
+    """Aplica One-Hot Encoding y elimina identificadores para dejar listo para ML."""
+    df_ml = df_limpio.copy()
+
+    # Codificación One-Hot de la variable categórica 'categoria'
+    df_ml = pd.get_dummies(df_ml, columns=["categoria"], prefix="cat", dtype=int)
+
+    # Eliminar columnas descriptivas que no son variables matemáticas
+    df_ml = df_ml.drop(columns=["id_producto", "nombre"])
+    print(f"[OK] Dataset preparado para ML con {df_ml.shape[1]} columnas numéricas.")
+    return df_ml
+
+def main():
+    print("=" * 65)
+    print("FASE 2A: LIMPIEZA Y PREPARACIÓN DE DATOS - ALMACÉN CARTAGO")
+    print("=" * 65)
+
+    ruta_origen = "../data/datos_productos.csv"
+    df_raw = cargar_datos(ruta_origen)
+    if df_raw is None:
+        return
+
+    df_limpio = limpiar_y_transformar(df_raw)
+    df_ml = preparar_para_ml(df_limpio)
+
+    # Guardar ambos datasets: uno legible para gráficos/análisis y otro 100% numérico para ML
+    df_limpio.to_csv("../data/proyecto_limpio.csv", index=False)
+    df_ml.to_csv("../data/proyecto_ml.csv", index=False)
+
+    print("\n[EXITO] Archivos guardados en ../data/:")
+    print("  1. proyecto_limpio.csv (con categorías limpias y métricas de negocio)")
+    print("  2. proyecto_ml.csv (con One-Hot Encoding listo para algoritmos)")
+
+if __name__ == "__main__":
+    main()

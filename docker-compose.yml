@@ -1,0 +1,9 @@
+services:
+  python:
+    build: .
+    container_name: ia_abastecimiento
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./graficos:/app/graficos
+    working_dir: /app/src

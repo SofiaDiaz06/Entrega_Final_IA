@@ -6,4 +6,8 @@ services:
       - ./src:/app/src
       - ./data:/app/data
       - ./graficos:/app/graficos
+      - ./docs:/app/docs
+    ports:
+      - "8501:8501"
     working_dir: /app/src
+    command: ["tail", "-f", "/dev/null"]

@@ -1,6 +1,7 @@
-import pandas as pd
-import numpy as np
 import os
+import numpy as np
+import pandas as pd
+
 
 def cargar_datos(ruta_csv):
     """Carga el dataset original con manejo de excepciones."""
@@ -14,6 +15,7 @@ def cargar_datos(ruta_csv):
     except Exception as e:
         print(f"[ERROR] Ocurrió un problema al leer el CSV: {e}")
         return None
+
 
 def limpiar_y_transformar(df):
     """Limpia erratas, verifica nulos y crea variables financieras del negocio."""
@@ -38,9 +40,20 @@ def limpiar_y_transformar(df):
     df_limpio["rotacion_diaria"] = (df_limpio["unidades_vendidas"] / 30).round(2)
 
     # 4. Variable objetivo (Target): 1 = Abastecer, 0 = No abastecer
-    # Regla de negocio: Alta demanda (>= 100 uds) y buena rentabilidad (margen >= 40%)
+    # Regla menos rígida: rotación saludable (>= 85 uds) y margen razonable (>= 35%),
+    # o alta rotación (>= 120 uds) con margen aceptable (>= 30%) y sin estancamiento severo.
+    condicion_principal = (
+        (df_limpio["unidades_vendidas"] >= 85)
+        & (df_limpio["margen_ganancia"] >= 35)
+        & (df_limpio["dias_sin_venta"] <= 10)
+    )
+    condicion_alta_rotacion = (
+        (df_limpio["unidades_vendidas"] >= 120)
+        & (df_limpio["margen_ganancia"] >= 30)
+        & (df_limpio["dias_sin_venta"] <= 10)
+    )
     df_limpio["decision_abastecer"] = np.where(
-        (df_limpio["unidades_vendidas"] >= 100) & (df_limpio["margen_ganancia"] >= 40),
+        condicion_principal | condicion_alta_rotacion,
         1,
         0
     )
@@ -48,6 +61,7 @@ def limpiar_y_transformar(df):
     print("[OK] Variables derivadas y etiqueta 'decision_abastecer' creadas.")
     print(f"     Distribución de clases: {df_limpio['decision_abastecer'].value_counts().to_dict()}")
     return df_limpio
+
 
 def preparar_para_ml(df_limpio):
     """Aplica One-Hot Encoding y elimina identificadores para dejar listo para ML."""
@@ -60,6 +74,7 @@ def preparar_para_ml(df_limpio):
     df_ml = df_ml.drop(columns=["id_producto", "nombre"])
     print(f"[OK] Dataset preparado para ML con {df_ml.shape[1]} columnas numéricas.")
     return df_ml
+
 
 def main():
     print("=" * 65)
@@ -81,6 +96,7 @@ def main():
     print("\n[EXITO] Archivos guardados en ../data/:")
     print("  1. proyecto_limpio.csv (con categorías limpias y métricas de negocio)")
     print("  2. proyecto_ml.csv (con One-Hot Encoding listo para algoritmos)")
+
 
 if __name__ == "__main__":
     main()

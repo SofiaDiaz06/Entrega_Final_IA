@@ -46,7 +46,7 @@ Entrega_Final_IA/
    ```
    mkdir -p /tmp/prueba_entrega
    cd /tmp/prueba_entrega
-   git clone [https://github.com/SofiaDiaz06/Entrega_Final_IA.git](https://github.com/SofiaDiaz06/Entrega_Final_IA.git)
+   git clone https://github.com/SofiaDiaz06/Entrega_Final_IA.git
    cd Entrega_Final_IA
 
    ```
@@ -71,7 +71,7 @@ Entrega_Final_IA/
 
    Bash
    ```
-   docker compose exec <NOMBRE_SERVICIO> bash -c "cd /app/src && python usar_modelo.py"
+   docker compose exec python bash -c "cd /app/src && python usar_modelo.py"
 
    ```
 
@@ -79,7 +79,7 @@ Entrega_Final_IA/
 
    Bash
    ```
-   docker compose exec -p 8501:8501 <NOMBRE_SERVICIO> bash -c "cd /app/src && streamlit run app_streamlit.py --server.address 0.0.0.0 --server.port 8501"
+   docker compose exec python bash -c "cd /app/src && streamlit run app_streamlit.py --server.address 0.0.0.0 --server.port 8501"
 
    ```
 

@@ -2,7 +2,6 @@ import os
 import numpy as np
 import pandas as pd
 
-
 def cargar_datos(ruta_csv):
     """Carga el dataset original con manejo de excepciones."""
     try:
@@ -25,10 +24,9 @@ def limpiar_y_transformar(df):
     nulos = df_limpio.isnull().sum().sum()
     print(f"[INFO] Valores nulos detectados: {nulos}")
     if nulos > 0:
-        # Si llegaran a existir nulos numéricos, se imputan con la mediana
         df_limpio = df_limpio.fillna(df_limpio.median(numeric_only=True))
 
-    # 2. Corrección de errores tipográficos en categorías ('Juquetes' -> 'Juguetes')
+    # 2. Corrección de errores tipográficos en categorías
     df_limpio["categoria"] = df_limpio["categoria"].str.strip().replace({
         "Juquetes": "Juguetes"
     })
@@ -40,8 +38,6 @@ def limpiar_y_transformar(df):
     df_limpio["rotacion_diaria"] = (df_limpio["unidades_vendidas"] / 30).round(2)
 
     # 4. Variable objetivo (Target): 1 = Abastecer, 0 = No abastecer
-    # Regla menos rígida: rotación saludable (>= 85 uds) y margen razonable (>= 35%),
-    # o alta rotación (>= 120 uds) con margen aceptable (>= 30%) y sin estancamiento severo.
     condicion_principal = (
         (df_limpio["unidades_vendidas"] >= 85)
         & (df_limpio["margen_ganancia"] >= 35)
@@ -66,11 +62,7 @@ def limpiar_y_transformar(df):
 def preparar_para_ml(df_limpio):
     """Aplica One-Hot Encoding y elimina identificadores para dejar listo para ML."""
     df_ml = df_limpio.copy()
-
-    # Codificación One-Hot de la variable categórica 'categoria'
     df_ml = pd.get_dummies(df_ml, columns=["categoria"], prefix="cat", dtype=int)
-
-    # Eliminar columnas descriptivas que no son variables matemáticas
     df_ml = df_ml.drop(columns=["id_producto", "nombre"])
     print(f"[OK] Dataset preparado para ML con {df_ml.shape[1]} columnas numéricas.")
     return df_ml
@@ -89,7 +81,6 @@ def main():
     df_limpio = limpiar_y_transformar(df_raw)
     df_ml = preparar_para_ml(df_limpio)
 
-    # Guardar ambos datasets: uno legible para gráficos/análisis y otro 100% numérico para ML
     df_limpio.to_csv("../data/proyecto_limpio.csv", index=False)
     df_ml.to_csv("../data/proyecto_ml.csv", index=False)
 

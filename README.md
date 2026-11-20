@@ -42,8 +42,11 @@ Entrega_Final_IA/
 1. Crea una carpeta temporal de prueba y clona el repositorio:
 
 mkdir -p /tmp/prueba_entrega
+
 cd /tmp/prueba_entrega
+
 git clone https://github.com/SofiaDiaz06/Entrega_Final_IA.git
+
 cd Entrega_Final_IA
 
 2. Levanta el contenedor desde cero:

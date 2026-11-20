@@ -1,43 +1,40 @@
 import joblib
 import pandas as pd
 
+
 def main():
     print("=" * 85)
     print("DEMOSTRACIÓN EN VIVO: SISTEMA DE RECOMENDACIÓN DE ABASTECIMIENTO (CARTAGO)")
     print("=" * 85)
 
-    # 1. Cargar el paquete del modelo guardado (incluye StandardScaler + Modelo ganador)
     paquete = joblib.load("modelo_proyecto.joblib")
     modelo = paquete["pipeline"]
     columnas_entrenamiento = paquete["columnas"]
     print(f"[INFO] Modelo cargado: {paquete['nombre_modelo']}\n")
 
-    # 2. Definir 4 productos nuevos realistas que llegan a cotización al almacén
+    # Casos nuevos: solo variables conocidas ANTES de decidir
     casos_nuevos = pd.DataFrame({
         "producto": [
-            "Set_Boligrafos_Gel (Alta rotación)",
-            "Adorno_Navideño (Estancado)",
+            "Set_Boligrafos_Gel (Alta rotación esperada)",
+            "Adorno_Navideño (Riesgo estancamiento)",
             "Agenda_Ejecutiva (Rotación media)",
             "Esmalte_Acrilico_Neon (Alta demanda)"
         ],
-        "ganancia_unitaria": [3200, 8500, 6500, 4000],
-        "dias_sin_venta": [1, 34, 9, 2],
-        "calificacion_cliente": [4.8, 3.8, 4.5, 4.7],
-        "stock_actual": [15, 48, 22, 18],
+        "precio_venta": [6000, 12000, 15000, 8000],
+        "costo_compra": [2800, 7000, 8500, 3500],
+        "stock_actual": [40, 55, 22, 18],
+        "calificacion_cliente": [4.7, 3.8, 4.5, 4.7],
         "categoria": ["Papeleria", "Fiesta", "Papeleria", "Belleza"]
     })
 
-    # 3. Aplicar la misma codificación One-Hot y alinear columnas con el entrenamiento
     X_nuevos = pd.get_dummies(
-        casos_nuevos[["ganancia_unitaria", "dias_sin_venta", "calificacion_cliente", "stock_actual", "categoria"]],
+        casos_nuevos[["precio_venta", "costo_compra", "stock_actual", "calificacion_cliente", "categoria"]],
         columns=["categoria"],
         prefix="cat",
         dtype=int
     )
-    # Rellenar con 0 las categorías que no aparezcan en estos 4 ejemplos nuevos
     X_nuevos = X_nuevos.reindex(columns=columnas_entrenamiento, fill_value=0)
 
-    # 4. Predecir probabilidad y decisión final
     probabilidades = modelo.predict_proba(X_nuevos)[:, 1]
     predicciones = modelo.predict(X_nuevos)
 
@@ -47,10 +44,11 @@ def main():
     ]
 
     columnas_vista = [
-        "producto", "categoria", "ganancia_unitaria", "dias_sin_venta", "Prob_Abastecer_%", "Recomendación"
+        "producto", "categoria", "precio_venta", "stock_actual", "Prob_Abastecer_%", "Recomendación"
     ]
     print(casos_nuevos[columnas_vista].to_string(index=False))
     print("\n" + "=" * 85)
+
 
 if __name__ == "__main__":
     main()

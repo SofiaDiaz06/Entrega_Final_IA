@@ -33,23 +33,20 @@ Entrega_Final_IA/
 
 ## Requisitos Previos
 
-- **Git** instalado para clonar el repositorio.
-- **Docker** y **Docker Compose** (`docker compose`) instalados y activos en el equipo.
-- **Puerto `8501` disponible** para la interfaz de Streamlit.
-- Terminal **Bash / Linux / WSL** para los comandos de prueba (en Windows sin WSL se pueden ejecutar directamente los comandos `git` y `docker compose` en PowerShell o Git Bash).
+- Git instalado para clonar el repositorio.
+- Docker y Docker Compose (`docker compose`) instalados y activos en el equipo.
+- Puerto 8501 disponible para la interfaz de Streamlit.
+- Terminal Bash / Linux / WSL para los comandos de prueba (en Windows sin WSL se pueden ejecutar directamente los comandos `git` y `docker compose` en PowerShell o Git Bash).
 
 ## Cómo Hacer la Prueba Paso a Paso con Docker
 
 1. Crea una carpeta temporal de prueba y clona el repositorio:
 
-   Bash
-   ```
-   mkdir -p /tmp/prueba_entrega
-   cd /tmp/prueba_entrega
-   git clone https://github.com/SofiaDiaz06/Entrega_Final_IA.git
-   cd Entrega_Final_IA
-
-   ```
+```bash
+mkdir -p /tmp/prueba_entrega
+cd /tmp/prueba_entrega
+git clone [https://github.com/SofiaDiaz06/Entrega_Final_IA.git](https://github.com/SofiaDiaz06/Entrega_Final_IA.git)
+cd Entrega_Final_IA
 
 2. Levanta el contenedor desde cero:
 
